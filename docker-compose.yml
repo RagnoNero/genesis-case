@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+    container_name: weather-subscription-app
+    depends_on:
+      - db
+    environment:
+      - DOCKER_PORT=${DOCKER_PORT}
+      - APP_URL=${APP_URL}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_NAME=${DB_NAME}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_EMAIL=${SMTP_EMAIL}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - WEATHER_API_KEY=${WEATHER_API_KEY}
+    ports:
+      - "80:${DOCKER_PORT}"
+      - "8080:${DOCKER_PORT}"
+      - "443:${DOCKER_PORT}"
+      - "8443:${DOCKER_PORT}"
+    restart: always
+
+  db:
+    image: postgres:15
+    container_name: weather-subscription-db
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    restart: always
+
+volumes:
+  pgdata:

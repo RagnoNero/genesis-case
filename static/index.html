@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Weather Forecast & Subscription</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 500px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    input, button, select {
+      padding: 10px;
+      margin-top: 10px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .hidden {
+      display: none;
+    }
+    #result {
+      margin-top: 20px;
+      padding: 10px;
+      background: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <h2>Get Weather Forecast or Subscribe</h2>
+
+  <form id="mainForm">
+    <label for="city">City:</label>
+    <input type="text" id="city" name="city" required>
+
+    <button type="button" onclick="getWeather()">Get Weather</button>
+    <button type="button" onclick="showSubscription()">Subscribe</button>
+  </form>
+
+  <form id="subscribeForm" class="hidden">
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required>
+
+    <label for="frequency">Frequency:</label>
+    <select id="frequency" name="frequency" required>
+      <option value="Hourly">Hourly</option>
+      <option value="Daily">Daily</option>
+    </select>
+
+    <button type="button" onclick="subscribe()">Confirm Subscription</button>
+  </form>
+
+  <div id="result"></div>
+
+  <script>
+    function showSubscription() {
+      document.getElementById('subscribeForm').classList.remove('hidden');
+      document.getElementById('result').innerText = '';
+    }
+
+    function getWeather() {
+      const city = document.getElementById('city').value;
+      if (!city) {
+        alert("Please enter a city.");
+        return;
+      }
+
+      fetch(`/weather?city=${encodeURIComponent(city)}`)
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('result').innerText =
+            `Weather in ${city}:\nTemperature: ${data.temperature}°C\nHumidity: ${data.humidity}%\nDescription: ${data.description}`;
+        })
+        .catch(err => {
+          document.getElementById('result').innerText = 'Failed to fetch weather data.';
+        });
+    }
+
+    function subscribe() {
+      const city = document.getElementById('city').value;
+      const email = document.getElementById('email').value;
+      const frequency = document.getElementById('frequency').value;
+
+      if (!city || !email || !frequency) {
+        alert("Please fill all fields.");
+        return;
+      }
+
+      fetch('/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city, email, frequency })
+      })
+      .then(response => {
+        if (response.ok) {
+          document.getElementById('result').innerText = 'Subscription successful!';
+          document.getElementById('subscribeForm').classList.add('hidden');
+        } else {
+          document.getElementById('result').innerText = 'Subscription failed. Status code: ' + response.status;
+        }
+      })
+      .catch(err => {
+        document.getElementById('result').innerText = 'Network error: ' + err;
+      });
+    }
+  </script>
+</body>
+</html>
